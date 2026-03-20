@@ -257,6 +257,18 @@ Automation Coverage
   Manual:       NN% — spatial, XA, collation behavior, cutover
 ```
 
+### STOP AND ASK — Continue to Execution?
+
+After presenting the readiness summary, always ask the user before proceeding:
+
+"The assessment is complete. Phases 5–7 will convert your schema, load data into TiDB, and validate the migration. Would you like to continue to the execution phases, or stop here with the assessment?"
+
+- If the user wants to stop: the scan report is the deliverable. Offer to save it as JSON/Markdown.
+- If the user wants to continue: resolve any blockers first (ask about language choices for stored procedures, triggers, events), then proceed to Phase 5.
+- If blockers exist: they must be addressed before Phase 5. Ask the user how each should be handled.
+
+Do NOT proceed to Phase 5 without explicit user confirmation.
+
 ---
 
 ## Phase 5: Convert Schema
