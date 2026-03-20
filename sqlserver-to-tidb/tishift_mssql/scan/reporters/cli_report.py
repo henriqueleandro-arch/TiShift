@@ -1,4 +1,4 @@
-"""CLI report formatter — plain-text format matching Aurora TiShift output."""
+"""CLI report formatter — plain-text format matching TiShift standard output."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ _SEP = "    " + "─" * 57
 
 
 def render_cli_report(report: ScanReport, console: Console) -> None:
-    """Render the scan report as plain text matching the Aurora TiShift format."""
+    """Render the scan report as plain text matching the TiShift standard format."""
     scoring = report.scoring
     inv = report.schema_inventory
     auto = report.automation
@@ -31,7 +31,6 @@ def render_cli_report(report: ScanReport, console: Console) -> None:
     sp_count = sum(1 for r in inv.routines if "PROCEDURE" in r.routine_type.upper())
     fn_count = sum(1 for r in inv.routines if "FUNCTION" in r.routine_type.upper())
 
-    # ── Build plain-text output ──
     out = console.print
 
     out(_BORDER)
@@ -70,6 +69,7 @@ def render_cli_report(report: ScanReport, console: Console) -> None:
     out("    FINDINGS")
     out(_SEP)
 
+    # Blockers — group by type with count, short description, and action
     blocker_groups: dict[str, list] = {}
     for issue in assessment.blockers:
         blocker_groups.setdefault(issue.type, []).append(issue)
@@ -78,13 +78,17 @@ def render_cli_report(report: ScanReport, console: Console) -> None:
     if not assessment.blockers:
         out("      (none)")
     for btype, issues in sorted(blocker_groups.items()):
-        msg = issues[0].message
-        suggestion = issues[0].suggestion or ""
-        count_str = f" ({len(issues)})" if len(issues) > 1 else ""
-        out(f"      • {btype}{count_str} — {msg}")
+        count = len(issues)
+        count_str = f" ({count})" if count > 1 else ""
+        # Short description from the first issue
+        short_msg = _short_description(issues[0].message)
+        out(f"      • {btype}{count_str} — {short_msg}")
+        # Action on next line with arrow
+        suggestion = issues[0].suggestion
         if suggestion:
             out(f"        → {suggestion}")
 
+    # Warnings — group by type
     warning_groups: dict[str, list] = {}
     for issue in assessment.warnings:
         warning_groups.setdefault(issue.type, []).append(issue)
@@ -92,10 +96,11 @@ def render_cli_report(report: ScanReport, console: Console) -> None:
     out("")
     out(f"    Warnings: {len(assessment.warnings)}")
     for wtype, issues in sorted(warning_groups.items()):
-        msg = issues[0].message
-        count_str = f" ({len(issues)})" if len(issues) > 1 else ""
-        suggestion = issues[0].suggestion or ""
-        out(f"      • {wtype}{count_str} — {msg}")
+        count = len(issues)
+        count_str = f" ({count})" if count > 1 else ""
+        short_msg = _short_description(issues[0].message)
+        out(f"      • {wtype}{count_str} — {short_msg}")
+        suggestion = issues[0].suggestion
         if suggestion:
             out(f"        → {suggestion}")
 
@@ -104,39 +109,28 @@ def render_cli_report(report: ScanReport, console: Console) -> None:
     out("    AUTOMATION COVERAGE")
     out(_SEP)
 
-    auto_desc = ", ".join(auto.fully_automated_includes[:4]) if auto.fully_automated_includes else ""
-    ai_desc = ", ".join(auto.ai_assisted_includes[:2]) if auto.ai_assisted_includes else ""
-    manual_desc = ", ".join(auto.manual_required_includes[:3]) if auto.manual_required_includes else ""
+    # Build concise multi-item descriptions like the Aurora format
+    auto_items = ", ".join(auto.fully_automated_includes[:6]) if auto.fully_automated_includes else ""
+    ai_items = ", ".join(auto.ai_assisted_includes[:3]) if auto.ai_assisted_includes else ""
+    manual_items = ", ".join(auto.manual_required_includes[:3]) if auto.manual_required_includes else ""
 
-    auto_line = f"    Automated:    {auto.fully_automated_pct:>3.0f}%"
-    if auto_desc:
-        auto_line += f" — {auto_desc}"
-    out(auto_line)
-
-    ai_line = f"    AI-assisted:  {auto.ai_assisted_pct:>3.0f}%"
-    if ai_desc:
-        ai_line += f" — {ai_desc}"
-    out(ai_line)
-
-    manual_line = f"    Manual:       {auto.manual_required_pct:>3.0f}%"
-    if manual_desc:
-        manual_line += f" — {manual_desc}"
-    out(manual_line)
+    _print_automation_line(out, "Automated:", auto.fully_automated_pct, auto_items)
+    _print_automation_line(out, "AI-assisted:", auto.ai_assisted_pct, ai_items)
+    _print_automation_line(out, "Manual:", auto.manual_required_pct, manual_items)
 
     # ── Scanned Objects ──
     out("")
     out("    SCANNED OBJECTS")
     out(_SEP)
-    out(
-        f"    Tables {len(inv.tables):<4}  Columns {len(inv.columns):<4}  "
-        f"Indexes {len(inv.indexes)}"
-    )
-    second_line = f"    Routines {sp_count + fn_count:<2}  Triggers {len(inv.triggers):<2}  Views {len(inv.views)}"
+    routines_total = sp_count + fn_count
+    line1 = f"    Tables {len(inv.tables):<4}  Columns {len(inv.columns):<4}  Indexes {len(inv.indexes)}"
+    out(line1)
+    line2_parts = [f"Routines {routines_total}", f"Triggers {len(inv.triggers)}", f"Views {len(inv.views)}"]
     if inv.assemblies:
-        second_line += f"  CLR {len(inv.assemblies)}"
+        line2_parts.append(f"CLR {len(inv.assemblies)}")
     if inv.agent_jobs:
-        second_line += f"  Jobs {len(inv.agent_jobs)}"
-    out(second_line)
+        line2_parts.append(f"Jobs {len(inv.agent_jobs)}")
+    out("    " + "   ".join(line2_parts))
 
     # ── Cost Comparison (optional) ──
     if report.cost_estimate:
@@ -161,3 +155,54 @@ def render_cli_report(report: ScanReport, console: Console) -> None:
     out("    https://tidbcloud.com/free-trial")
     out(_BORDER)
     out("")
+
+    # ── Score breakdown (below the report box) ──
+    out("  Score breakdown:")
+    for cat in [
+        scoring.schema_compatibility,
+        scoring.code_portability,
+        scoring.query_compatibility,
+        scoring.data_complexity,
+        scoring.operational_readiness,
+    ]:
+        if cat is None:
+            continue
+        name = "Operational" if "Operational" in cat.name else cat.name
+        if cat.deductions:
+            deductions_str = ", ".join(cat.deductions)
+            penalty = cat.max_score - cat.score
+            out(f"  - {name} ({cat.score}/{cat.max_score}): {deductions_str} = -{penalty}")
+        else:
+            out(f"  - {name} ({cat.score}/{cat.max_score}): no deductions")
+    out("")
+
+
+def _short_description(message: str) -> str:
+    """Truncate a long issue message to a concise form."""
+    # Take the first sentence or up to 60 chars
+    if ". " in message:
+        return message.split(". ")[0] + "."
+    if len(message) > 65:
+        return message[:62] + "..."
+    return message
+
+
+def _print_automation_line(out, label: str, pct: float, description: str) -> None:
+    """Print an automation line with percentage and wrapped description."""
+    first_line = f"    {label:<14}{pct:>3.0f}%"
+    if description:
+        first_line += f" — {description}"
+    # Wrap if too long
+    if len(first_line) > 70:
+        # Split at a reasonable point
+        cut = first_line.rfind(",", 0, 68)
+        if cut == -1:
+            cut = first_line.rfind(" ", 0, 68)
+        if cut > 20:
+            out(first_line[:cut + 1])
+            remainder = first_line[cut + 1:].strip()
+            out(f"{'':>20}{remainder}")
+        else:
+            out(first_line)
+    else:
+        out(first_line)
