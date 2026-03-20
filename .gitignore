@@ -1,0 +1,30 @@
+# Environment
+.env
+*.env.local
+venv/
+__pycache__/
+*.pyc
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Credentials
+*.pem
+*.key
+credentials/
+
+# Logs
+*.log
+logs/
+
+# Build artifacts
+*.class
+target/
+node_modules/

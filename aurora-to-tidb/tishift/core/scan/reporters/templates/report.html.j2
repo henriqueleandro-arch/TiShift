@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TiShift Migration Readiness Report</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.6; padding: 2rem; }
+  .container { max-width: 960px; margin: 0 auto; }
+  h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+  h2 { font-size: 1.3rem; margin: 1.5rem 0 0.75rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.3rem; }
+  h3 { font-size: 1.1rem; margin: 1rem 0 0.5rem; }
+  .header { background: #0f172a; color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem; }
+  .header h1 { color: white; }
+  .header .subtitle { color: #94a3b8; font-size: 0.9rem; }
+  .meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem; margin-top: 1rem; }
+  .meta-item { font-size: 0.85rem; color: #cbd5e1; }
+  .meta-item strong { color: white; }
+  .score-card { background: white; border-radius: 12px; padding: 2rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; }
+  .score-big { font-size: 3.5rem; font-weight: 700; }
+  .score-label { font-size: 1rem; color: #64748b; }
+  .rating { font-size: 1.2rem; margin-top: 0.25rem; text-transform: uppercase; font-weight: 600; }
+  .categories { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+  .cat { background: white; border-radius: 8px; padding: 1rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); text-align: center; }
+  .cat-score { font-size: 1.5rem; font-weight: 700; }
+  .cat-name { font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+  .bar { height: 6px; background: #e2e8f0; border-radius: 3px; margin-top: 0.5rem; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; }
+  .section { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { text-align: left; padding: 0.5rem; border-bottom: 2px solid #e2e8f0; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; }
+  td { padding: 0.5rem; border-bottom: 1px solid #f1f5f9; }
+  .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+  .badge-blocker { background: #fef2f2; color: #dc2626; }
+  .badge-warning { background: #fffbeb; color: #d97706; }
+  .badge-info { background: #eff6ff; color: #2563eb; }
+  .auto-bar { display: flex; height: 24px; border-radius: 4px; overflow: hidden; margin: 0.5rem 0; font-size: 0.75rem; font-weight: 600; }
+  .auto-bar div { display: flex; align-items: center; justify-content: center; color: white; }
+  .auto-green { background: #22c55e; }
+  .auto-yellow { background: #eab308; }
+  .auto-red { background: #ef4444; }
+  details { margin: 0.5rem 0; }
+  summary { cursor: pointer; font-weight: 600; padding: 0.25rem 0; }
+  .footer { text-align: center; color: #94a3b8; font-size: 0.8rem; margin-top: 2rem; }
+  @media print { body { padding: 0; background: white; } .section { box-shadow: none; border: 1px solid #e2e8f0; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <h1>TiShift — Migration Readiness Report</h1>
+  <p class="subtitle">Aurora MySQL → TiDB Migration Assessment</p>
+  <div class="meta">
+    <div class="meta-item"><strong>Source:</strong> {{ source.host }}</div>
+    <div class="meta-item"><strong>Aurora:</strong> {{ source.aurora_version }}</div>
+    <div class="meta-item"><strong>MySQL:</strong> {{ source.mysql_version }}</div>
+    <div class="meta-item"><strong>Tables:</strong> {{ summary.table_count }}</div>
+    <div class="meta-item"><strong>Data Size:</strong> {{ summary.total_data_size_gb }} GB</div>
+    <div class="meta-item"><strong>Generated:</strong> {{ generated_at[:10] }}</div>
+  </div>
+</div>
+
+<div class="score-card">
+  <div class="score-big" style="color: {{ overall_color }}">{{ summary.overall_score }}/100</div>
+  <div class="rating">{{ rating_emoji }} {{ summary.rating }}</div>
+  <div class="score-label">Migration Readiness Score</div>
+</div>
+
+<div class="categories">
+  {% for cat_name, cat in scores.items() %}
+  <div class="cat">
+    <div class="cat-score" style="color: {{ cat.color }}">{{ cat.score }}/{{ cat.max }}</div>
+    <div class="cat-name">{{ cat_name | replace('_', ' ') }}</div>
+    <div class="bar"><div class="bar-fill" style="width: {{ (cat.score / cat.max * 100) | int }}%; background: {{ cat.color }}"></div></div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="section">
+  <h2>Automation Coverage</h2>
+  <div class="auto-bar">
+    {% if summary.automation_coverage_pct > 0 %}
+    <div class="auto-green" style="width: {{ summary.automation_coverage_pct }}%">{{ summary.automation_coverage_pct }}% Auto</div>
+    {% endif %}
+    {% if summary.ai_assisted_pct > 0 %}
+    <div class="auto-yellow" style="width: {{ summary.ai_assisted_pct }}%">{{ summary.ai_assisted_pct }}% AI</div>
+    {% endif %}
+    {% if summary.manual_required_pct > 0 %}
+    <div class="auto-red" style="width: {{ summary.manual_required_pct }}%">{{ summary.manual_required_pct }}% Manual</div>
+    {% endif %}
+  </div>
+</div>
+
+{% if issues.blockers %}
+<div class="section">
+  <h2>Blockers</h2>
+  <table>
+    <thead><tr><th>Type</th><th>Object</th><th>Message</th><th>Suggestion</th></tr></thead>
+    <tbody>
+    {% for b in issues.blockers %}
+    <tr>
+      <td><span class="badge badge-blocker">{{ b.type }}</span></td>
+      <td>{{ b.object }}</td>
+      <td>{{ b.message }}</td>
+      <td>{{ b.suggestion or '' }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{% if issues.warnings %}
+<div class="section">
+  <h2>Warnings</h2>
+  <table>
+    <thead><tr><th>Type</th><th>Object</th><th>Message</th><th>Suggestion</th><th>AI Suggestion</th></tr></thead>
+    <tbody>
+    {% for w in issues.warnings %}
+    <tr>
+      <td><span class="badge badge-warning">{{ w.type }}</span></td>
+      <td>{{ w.object }}</td>
+      <td>{{ w.message }}</td>
+      <td>{{ w.suggestion or '' }}</td>
+      <td>{{ w.ai_suggestion or '' }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{% if issues.info %}
+<div class="section">
+  <h2>Information</h2>
+  <table>
+    <thead><tr><th>Type</th><th>Object</th><th>Message</th></tr></thead>
+    <tbody>
+    {% for i in issues.info %}
+    <tr>
+      <td><span class="badge badge-info">{{ i.type }}</span></td>
+      <td>{{ i.object }}</td>
+      <td>{{ i.message }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{% if sp_analysis %}
+<div class="section">
+  <h2>Stored Procedure AI Analysis</h2>
+  <table>
+    <thead><tr><th>Schema</th><th>Name</th><th>Difficulty</th><th>Automation %</th><th>Summary</th><th>Suggested Approach</th></tr></thead>
+    <tbody>
+    {% for sp in sp_analysis %}
+    <tr>
+      <td>{{ sp.schema }}</td>
+      <td>{{ sp.name }}</td>
+      <td>{{ sp.difficulty }}</td>
+      <td>{{ sp.automation_pct or '' }}</td>
+      <td>{{ sp.summary or '' }}</td>
+      <td>{{ sp.suggested_approach or '' }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{% if cost_analysis %}
+<div class="section">
+  <h2>Cost Comparison</h2>
+  <table>
+    <thead><tr><th>Category</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Aurora Monthly Estimate</td><td>${{ '%.2f' | format(cost_analysis.aurora_monthly_estimate) }}</td></tr>
+      <tr><td>TiDB Monthly Estimate</td><td>${{ '%.2f' | format(cost_analysis.tidb_monthly_estimate) }}</td></tr>
+      <tr><td>Projected Savings</td><td>{{ cost_analysis.savings_pct }}%</td></tr>
+      <tr><td>Aurora Breakdown</td><td>Compute ${{ '%.2f' | format(cost_analysis.aurora_breakdown.compute) }}, Storage ${{ '%.2f' | format(cost_analysis.aurora_breakdown.storage) }}, IO ${{ '%.2f' | format(cost_analysis.aurora_breakdown.io) }}</td></tr>
+      <tr><td>TiDB Recommendation</td><td>{{ cost_analysis.tidb_recommendation.tier }} — {{ cost_analysis.tidb_recommendation.nodes }} nodes, {{ cost_analysis.tidb_recommendation.vcpu }} vCPU, {{ cost_analysis.tidb_recommendation.ram_gb }} GB RAM, {{ cost_analysis.tidb_recommendation.storage_gb }} GB storage</td></tr>
+    </tbody>
+  </table>
+  {% if cost_analysis.notes %}
+  <ul>
+    {% for n in cost_analysis.notes %}
+    <li>{{ n }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</div>
+{% endif %}
+
+<div class="section">
+  <h2>Schema Details</h2>
+  <details>
+    <summary>Tables ({{ schema_details.tables | length }})</summary>
+    <table>
+      <thead><tr><th>Schema</th><th>Table</th><th>Engine</th><th>Rows</th><th>Data MB</th><th>Collation</th></tr></thead>
+      <tbody>
+      {% for t in schema_details.tables %}
+      <tr><td>{{ t.schema }}</td><td>{{ t.name }}</td><td>{{ t.engine }}</td><td>{{ t.rows }}</td><td>{{ t.data_mb }}</td><td>{{ t.collation }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </details>
+  {% if schema_details.stored_procedures %}
+  <details>
+    <summary>Stored Procedures ({{ schema_details.stored_procedures | length }})</summary>
+    <table>
+      <thead><tr><th>Schema</th><th>Name</th><th>Type</th></tr></thead>
+      <tbody>
+      {% for sp in schema_details.stored_procedures %}
+      <tr><td>{{ sp.schema }}</td><td>{{ sp.name }}</td><td>{{ sp.type }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </details>
+  {% endif %}
+  {% if schema_details.triggers %}
+  <details>
+    <summary>Triggers ({{ schema_details.triggers | length }})</summary>
+    <table>
+      <thead><tr><th>Schema</th><th>Name</th><th>Event</th><th>Table</th></tr></thead>
+      <tbody>
+      {% for tr in schema_details.triggers %}
+      <tr><td>{{ tr.schema }}</td><td>{{ tr.name }}</td><td>{{ tr.event }}</td><td>{{ tr.table }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </details>
+  {% endif %}
+</div>
+
+<div class="section">
+  <h2>Data Profile</h2>
+  <p>Total rows: {{ data_profile.total_row_count | default(0) }}</p>
+  {% if data_profile.largest_tables %}
+  <details>
+    <summary>Largest Tables</summary>
+    <table>
+      <thead><tr><th>Schema</th><th>Table</th><th>Rows</th><th>Data MB</th><th>Total MB</th></tr></thead>
+      <tbody>
+      {% for t in data_profile.largest_tables %}
+      <tr><td>{{ t.schema }}</td><td>{{ t.table }}</td><td>{{ t.rows }}</td><td>{{ t.data_mb }}</td><td>{{ t.total_mb }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </details>
+  {% endif %}
+  {% if data_profile.blob_columns %}
+  <details>
+    <summary>BLOB/TEXT Columns ({{ data_profile.blob_columns | length }})</summary>
+    <table>
+      <thead><tr><th>Schema</th><th>Table</th><th>Column</th><th>Type</th></tr></thead>
+      <tbody>
+      {% for bc in data_profile.blob_columns %}
+      <tr><td>{{ bc.schema }}</td><td>{{ bc.table }}</td><td>{{ bc.column }}</td><td>{{ bc.type }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </details>
+  {% endif %}
+</div>
+
+{% if scores %}
+<div class="section">
+  <h2>Score Deductions</h2>
+  {% for cat_name, cat in scores.items() %}
+  <details>
+    <summary>{{ cat_name | replace('_', ' ') | title }} — {{ cat.score }}/{{ cat.max }}</summary>
+    <ul>
+    {% for d in cat.deductions %}
+      <li>{{ d }}</li>
+    {% endfor %}
+    </ul>
+  </details>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="footer">
+  Generated by TiShift v{{ version }} — Aurora MySQL → TiDB Migration Toolkit
+</div>
+
+</div>
+</body>
+</html>

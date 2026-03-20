@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# Testing
+.pytest_cache/
+
+# OS
+.DS_Store
+
+# Credentials & secrets
+tishift-mssql.yaml
+.env
+.env.*
+*.pem
+*.key
+credentials/
+
+# Runtime state
+.tishift-state/
+
+# Logs
+*.log
+logs/
+
+# Migration output (may contain sensitive schema/data)
+tishift-reports/
+tishift-convert/
+tishift-load/
+tishift-check/
+tishift-sync/
+migration-output/
+*.csv
+*.tsv

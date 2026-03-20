@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TiShift for SQL Server | Safari Print</title>
+<style>
+  :root {
+    --ink: #112338;
+    --muted: #5b6a7c;
+    --line: #d8e1ea;
+    --brand: #f05a28;
+    --brand-dark: #c84519;
+    --navy: #1d3553;
+    --navy-soft: #edf3fa;
+    --orange-soft: #fff3ee;
+    --teal-soft: #eef8f6;
+    --panel: #ffffff;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #f2f5f8;
+    color: var(--ink);
+    font-family: "Avenir Next", "Segoe UI", Arial, sans-serif;
+  }
+
+  body {
+    padding: 18px;
+  }
+
+  .page {
+    width: 8.5in;
+    min-height: 11in;
+    margin: 0 auto;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 0.52in 0.55in 0.45in;
+  }
+
+  .top {
+    margin-bottom: 16px;
+  }
+
+  .eyebrow {
+    color: var(--brand);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .hero {
+    background: #f8fbfe;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-top: 10px;
+    margin-bottom: 14px;
+  }
+
+  .hero-head {
+    background: var(--navy);
+    color: white;
+    padding: 18px 20px 16px;
+  }
+
+  .hero-head .kicker {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.10em;
+    color: #c7d5e5;
+    margin-bottom: 8px;
+  }
+
+  h1, h2, h3 {
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, serif;
+    margin: 0;
+  }
+
+  h1 {
+    font-size: 30px;
+    line-height: 1.04;
+    letter-spacing: -0.03em;
+    margin-bottom: 10px;
+    max-width: 560px;
+  }
+
+  .hero-head p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.45;
+    color: #e2ebf5;
+    max-width: 620px;
+  }
+
+  .hero-body {
+    padding: 14px 18px 12px;
+    background: white;
+  }
+
+  .pill-row {
+    font-size: 11px;
+    color: #7b331d;
+    font-weight: 700;
+  }
+
+  .pill-row span {
+    display: inline-block;
+    background: var(--orange-soft);
+    border: 1px solid #f2c7b8;
+    border-radius: 999px;
+    padding: 7px 10px;
+    margin-right: 6px;
+    margin-bottom: 6px;
+  }
+
+  .two-col {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    border-spacing: 12px 0;
+    margin: 0 -12px 14px;
+  }
+
+  .two-col > div {
+    display: table-cell;
+    vertical-align: top;
+    width: 50%;
+    padding: 0 12px;
+  }
+
+  .card {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px;
+    background: white;
+  }
+
+  .card.challenge {
+    background: var(--orange-soft);
+  }
+
+  .card.solution {
+    background: var(--navy-soft);
+  }
+
+  .card h2,
+  .band h2,
+  .section h2 {
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+
+  .card p,
+  .section p,
+  .cap p,
+  .legend-item,
+  .inside-item p,
+  .why-item p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.45;
+    color: #3d5166;
+  }
+
+  .band {
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 14px;
+    background: #f9fbfd;
+    margin-bottom: 14px;
+  }
+
+  .band-top {
+    margin-bottom: 10px;
+  }
+
+  .band-note {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .caps {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    border-spacing: 8px 0;
+    margin: 0 -8px;
+  }
+
+  .cap {
+    display: table-cell;
+    vertical-align: top;
+    padding: 0 8px;
+  }
+
+  .cap-box {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: white;
+    padding: 10px;
+    min-height: 138px;
+  }
+
+  .num {
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    text-align: center;
+    border-radius: 50%;
+    background: var(--brand);
+    color: white;
+    font-size: 12px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+
+  .cap h3 {
+    font-size: 15px;
+    margin-bottom: 5px;
+  }
+
+  .score-row {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    border-spacing: 12px 0;
+    margin: 0 -12px 14px;
+  }
+
+  .score-row > div {
+    display: table-cell;
+    vertical-align: top;
+    padding: 0 12px;
+  }
+
+  .section {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px;
+    background: white;
+  }
+
+  .section.dark {
+    background: var(--navy);
+    color: white;
+    border-color: #2f4c71;
+  }
+
+  .section.dark p {
+    color: #dbe6f1;
+  }
+
+  .score-list {
+    margin-top: 10px;
+  }
+
+  .score-list span {
+    display: inline-block;
+    background: rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: white;
+    border-radius: 10px;
+    padding: 6px 8px;
+    margin: 0 6px 6px 0;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .meter {
+    height: 16px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: #e7edf3;
+    margin: 10px 0;
+    font-size: 0;
+  }
+
+  .meter span {
+    display: inline-block;
+    height: 100%;
+  }
+
+  .meter .auto { width: 55%; background: #167e69; }
+  .meter .ai { width: 30%; background: #ee9d16; }
+  .meter .manual { width: 15%; background: #d35c39; }
+
+  .legend-item {
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    margin-bottom: 6px;
+    background: #fafcfe;
+  }
+
+  .legend-item strong,
+  .inside-item strong,
+  .why-item strong {
+    display: block;
+    font-size: 12px;
+    margin-bottom: 4px;
+    color: var(--ink);
+  }
+
+  .bottom {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    border-spacing: 12px 0;
+    margin: 0 -12px;
+  }
+
+  .bottom > div {
+    display: table-cell;
+    vertical-align: top;
+    padding: 0 12px;
+  }
+
+  .inside-grid {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    border-spacing: 8px 8px;
+    margin: -8px;
+  }
+
+  .inside-item {
+    display: table-cell;
+    width: 50%;
+    vertical-align: top;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #fafcfe;
+    padding: 10px;
+  }
+
+  .inside-row {
+    display: table-row;
+  }
+
+  .why {
+    background: var(--orange-soft);
+    border-color: #edc7b7;
+  }
+
+  .why-item {
+    padding: 9px 10px;
+    border: 1px solid #efd4c7;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.85);
+    margin-bottom: 8px;
+  }
+
+  .contact {
+    border-top: 1px solid #efcfc3;
+    padding-top: 10px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #45586b;
+  }
+
+  .footer {
+    margin-top: 12px;
+    font-size: 10px;
+    color: #7b8897;
+  }
+
+  @page {
+    size: Letter;
+    margin: 0.2in;
+  }
+
+  @media print {
+    body {
+      padding: 0;
+      background: white;
+    }
+
+    .page {
+      width: auto;
+      min-height: auto;
+      margin: 0;
+      border: none;
+    }
+  }
+</style>
+</head>
+<body>
+  <main class="page">
+    <div class="top">
+      <div class="eyebrow">TiShift for SQL Server</div>
+    </div>
+
+    <section class="hero">
+      <div class="hero-head">
+        <div class="kicker">AI-Powered Migration to TiDB</div>
+        <h1>Eliminate SQL Server licensing costs. Scale without limits on TiDB Cloud.</h1>
+        <p>TiShift combines deterministic migration automation with AI Skills to move SQL Server workloads into TiDB faster, especially the hard parts: T-SQL stored procedures, CLR assemblies, SQL Agent jobs, triggers, and multi-schema environments.</p>
+      </div>
+      <div class="hero-body">
+        <div class="pill-row">
+          <span>Reduce migration effort from months to weeks</span>
+          <span>Qualify workloads early with readiness scoring</span>
+          <span>Cut over with sync and validation confidence</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="two-col">
+      <div>
+        <article class="card challenge">
+          <h2>The Challenge</h2>
+          <p>Enterprises running SQL Server face escalating licensing costs, hard scaling ceilings, and vendor lock-in. Migration is often blocked by T-SQL procedures, CLR assemblies, SQL Agent jobs, linked servers, `INSTEAD OF` triggers, and multi-schema architectures that traditional tooling cannot convert reliably.</p>
+        </article>
+      </div>
+      <div>
+        <article class="card solution">
+          <h2>The Solution</h2>
+          <p>TiShift provides one migration workflow across assessment, conversion, bulk load, CDC sync, and validation. It inventories source complexity, estimates automation coverage, converts what can be automated, and flags true blockers before teams waste time on poor-fit projects.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="band">
+      <div class="band-top">
+        <h2>Five Integrated Capabilities, One CLI</h2>
+        <div class="band-note">Scan. Convert. Load. Sync. Check.</div>
+      </div>
+      <div class="caps">
+        <div class="cap"><div class="cap-box"><div class="num">1</div><h3>Scan</h3><p>Inventories schemas, procedures, CLR objects, triggers, and SQL Agent jobs with blocker and warning classification.</p></div></div>
+        <div class="cap"><div class="cap-box"><div class="num">2</div><h3>Convert</h3><p>Maps SQL Server DDL, data types, collations, and rewrites T-SQL logic into Python, Go, Java, or JavaScript application code.</p></div></div>
+        <div class="cap"><div class="cap-box"><div class="num">3</div><h3>Load</h3><p>Runs bulk transfer strategies including TiDB Lightning, resumable execution, concurrency tuning, and index optimization for 3-5x faster loads.</p></div></div>
+        <div class="cap"><div class="cap-box"><div class="num">4</div><h3>Sync</h3><p>Keeps SQL Server and TiDB aligned during cutover with CDC replication and lag monitoring.</p></div></div>
+        <div class="cap"><div class="cap-box"><div class="num">5</div><h3>Check</h3><p>Validates row counts, checksums, columns, and sampled row diffs with continuous verification during synchronization.</p></div></div>
+      </div>
+    </section>
+
+    <section class="score-row">
+      <div>
+        <article class="section dark">
+          <h2>Scan &amp; Score: Qualify Fast, De-Risk Early</h2>
+          <p>TiShift scores readiness across weighted dimensions so teams can identify high-potential migrations and eliminate high-risk scenarios early.</p>
+          <div class="score-list">
+            <span>Schema compatibility</span>
+            <span>Code portability</span>
+            <span>Query compatibility</span>
+            <span>Data complexity</span>
+            <span>Operational readiness</span>
+          </div>
+        </article>
+      </div>
+      <div>
+        <article class="section">
+          <h2>Automation Coverage Estimate</h2>
+          <p>Every workload is broken into realistic delivery buckets so partners and customers can forecast effort before committing resources.</p>
+          <div class="meter"><span class="auto"></span><span class="ai"></span><span class="manual"></span></div>
+          <div class="legend-item"><strong>Fully automated</strong>Deterministic mappings for schema, type conversion, load, sync, and validation.</div>
+          <div class="legend-item"><strong>AI-assisted</strong>Conversion help for complex procedure, trigger, and CLR logic with generated code stubs.</div>
+          <div class="legend-item"><strong>Manual required</strong>Early flagging for blockers such as heavy CLR dependency or deep linked server usage.</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="bottom">
+      <div>
+        <article class="section">
+          <h2>What’s Inside TiShift for SQL Server</h2>
+          <div class="inside-grid">
+            <div class="inside-row">
+              <div class="inside-item"><strong>Deterministic CLI</strong><p>Handles repeatable rule-based work: schema transformation, collation and type mapping, data loading, sync orchestration, and validation.</p></div>
+              <div class="inside-item"><strong>AI Skills</strong><p>Analyze complex stored procedures, convert CLR assemblies to application code, rewrite intricate T-SQL patterns, and generate test scaffolding.</p></div>
+            </div>
+          </div>
+          <div class="inside-grid">
+            <div class="inside-row">
+              <div class="inside-item"><strong>Rules Engine</strong><p>Includes SQL Server-aware mappings for `NVARCHAR`, `DATETIME2`, `MONEY`, `HIERARCHYID`, plus collation translation and query pattern detection.</p></div>
+              <div class="inside-item"><strong>Conversion Modules</strong><p>Dedicated converters for procedures, triggers, CLR assemblies, SQL Agent jobs, plus `sqlglot`-powered T-SQL to MySQL query rewriting and diffs.</p></div>
+            </div>
+          </div>
+          <div class="inside-grid">
+            <div class="inside-row">
+              <div class="inside-item"><strong>Deep Inventory</strong><p>Captures memory-optimized tables, temporal tables, FILESTREAM columns, indexed views with `SCHEMABINDING`, permissioned CLR code, and linked servers.</p></div>
+              <div class="inside-item"><strong>Schema Mapping</strong><p>Supports flatten, prefix, or database-per-schema strategies to map SQL Server multi-schema estates into TiDB cleanly.</p></div>
+            </div>
+          </div>
+        </article>
+      </div>
+      <div>
+        <article class="section why">
+          <h2>What Makes TiShift Different</h2>
+          <div class="why-item"><strong>AI-assisted conversion</strong><p>Turns procedural SQL and CLR-heavy logic into explainable application-layer code stubs with tests instead of leaving teams with a manual rewrite backlog.</p></div>
+          <div class="why-item"><strong>Early-fit scoring</strong><p>Separates fast-win migrations from high-risk scenarios early, improving pipeline quality for both partners and customers.</p></div>
+          <div class="why-item"><strong>One workflow to cutover</strong><p>Assessment, conversion, bulk load, CDC sync, and validation live in one toolkit rather than fragmented point solutions.</p></div>
+          <div class="contact"><strong>Contact</strong><br>PingCAP Partner Solutions Architect</div>
+        </article>
+      </div>
+    </section>
+
+    <div class="footer">Safari print-safe one-page layout for PDF export</div>
+  </main>
+</body>
+</html>

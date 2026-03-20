@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TiShift for SQL Server | Partner Brief</title>
+<style>
+  :root {
+    --ink: #132538;
+    --muted: #617286;
+    --line: #d8e1ea;
+    --paper: #eef3f8;
+    --panel: #ffffff;
+    --navy: #18314d;
+    --navy2: #234767;
+    --orange: #f05a28;
+    --orange-soft: #fff3ed;
+    --blue-soft: #f2f8fc;
+    --green: #167d68;
+    --amber: #eea11d;
+    --red: #d8613c;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Avenir Next", "Segoe UI", Arial, sans-serif;
+  }
+
+  body {
+    padding: 18px;
+  }
+
+  .page {
+    width: 8.5in;
+    height: 11in;
+    margin: 0 auto 16px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 0.34in 0.38in 0.3in;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .page::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at top right, rgba(240, 90, 40, 0.07), transparent 22%),
+      radial-gradient(circle at bottom left, rgba(35, 71, 103, 0.05), transparent 20%);
+    pointer-events: none;
+  }
+
+  .content {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .topbar, .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .eyebrow {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--orange);
+  }
+
+  .topnote, .footer {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+
+  h1, h2, h3 {
+    margin: 0;
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, serif;
+  }
+
+  h1 {
+    font-size: 24px;
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    margin: 7px 0 8px;
+    max-width: 480px;
+  }
+
+  h2 {
+    font-size: 15px;
+    margin-bottom: 6px;
+  }
+
+  h3 {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 10px;
+    line-height: 1.34;
+    color: #3d5166;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 16px;
+  }
+
+  li {
+    margin: 0 0 4px;
+    font-size: 10px;
+    line-height: 1.3;
+    color: #3d5166;
+  }
+
+  .hero {
+    display: grid;
+    grid-template-columns: 1.32fr 0.88fr;
+    gap: 12px;
+    margin-top: 10px;
+  }
+
+  .hero-copy p {
+    font-size: 11px;
+  }
+
+  .pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 9px;
+  }
+
+  .pill {
+    padding: 5px 8px;
+    border-radius: 999px;
+    background: var(--orange-soft);
+    border: 1px solid #f2ccbf;
+    color: #8a361d;
+    font-size: 9px;
+    font-weight: 700;
+  }
+
+  .hero-panel, .score-card {
+    background: linear-gradient(160deg, var(--navy) 0%, var(--navy2) 100%);
+    color: white;
+    border-radius: 14px;
+    padding: 11px 12px;
+  }
+
+  .hero-panel h2, .score-card h2 {
+    color: white;
+  }
+
+  .hero-panel li, .score-card li, .score-card p {
+    color: #dde7f2;
+  }
+
+  .row-2, .row-proof, .row-3, .workflow {
+    display: grid;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .row-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .row-proof {
+    grid-template-columns: 1.08fr 0.92fr;
+  }
+
+  .row-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .workflow {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .card {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: white;
+    padding: 10px 11px;
+  }
+
+  .tint-orange {
+    background: linear-gradient(180deg, #fff 0%, #fff8f5 100%);
+  }
+
+  .tint-blue {
+    background: linear-gradient(180deg, #fff 0%, #f4f9fd 100%);
+  }
+
+  .tint-green {
+    background: linear-gradient(180deg, #fff 0%, #f4fbf8 100%);
+  }
+
+  .score-mini {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .score-box {
+    border-radius: 10px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    padding: 7px 6px;
+  }
+
+  .score-box strong {
+    display: block;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #b7cade;
+    margin-bottom: 4px;
+  }
+
+  .score-box span {
+    display: block;
+    font-size: 9px;
+    line-height: 1.25;
+    color: white;
+  }
+
+  .coverage {
+    margin-top: 8px;
+  }
+
+  .bar {
+    display: flex;
+    height: 12px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: #e7edf3;
+    margin: 6px 0 8px;
+  }
+
+  .auto { width: 56%; background: var(--green); }
+  .ai { width: 29%; background: var(--amber); }
+  .manual { width: 15%; background: var(--red); }
+
+  .legend {
+    display: grid;
+    gap: 5px;
+  }
+
+  .legend div {
+    font-size: 9px;
+    line-height: 1.28;
+    color: #44576b;
+  }
+
+  .legend strong {
+    color: var(--ink);
+  }
+
+  .terminal {
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid #20344a;
+    background: #101b2a;
+    color: #dce7f1;
+  }
+
+  .terminal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 10px;
+    background: #162638;
+    color: #a7bcd0;
+    border-bottom: 1px solid #233a54;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .dots {
+    display: flex;
+    gap: 5px;
+  }
+
+  .dots span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .dots span:nth-child(1) { background: #ff5f56; }
+  .dots span:nth-child(2) { background: #ffbd2e; }
+  .dots span:nth-child(3) { background: #27c93f; }
+
+  pre {
+    margin: 0;
+    padding: 9px 10px 10px;
+    font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 9px;
+    line-height: 1.32;
+    white-space: pre-wrap;
+  }
+
+  .proof-note {
+    font-size: 9px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  .cap-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .cap {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: white;
+    padding: 9px;
+  }
+
+  .num {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--orange);
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+
+  .tight li {
+    margin-bottom: 3px;
+  }
+
+  .footer {
+    margin-top: auto;
+    padding-top: 8px;
+    border-top: 1px solid #e4ebf1;
+  }
+
+  .avoid {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  @page {
+    size: Letter;
+    margin: 0;
+  }
+
+  @media print {
+    body {
+      padding: 0;
+      background: white;
+    }
+
+    .page {
+      margin: 0;
+      border: none;
+      page-break-after: always;
+    }
+
+    .page:last-child {
+      page-break-after: auto;
+    }
+  }
+</style>
+</head>
+<body>
+  <section class="page">
+    <div class="content">
+      <div class="topbar">
+        <div class="eyebrow">TiShift for SQL Server</div>
+        <div class="topnote">Partner Seller / SA Brief</div>
+      </div>
+
+      <div class="hero avoid">
+        <div class="hero-copy">
+          <div class="eyebrow">AI-Powered Migration to TiDB</div>
+          <h1>Eliminate SQL Server licensing costs. Scale without limits on TiDB Cloud.</h1>
+          <p>TiShift helps partners qualify and accelerate SQL Server to TiDB migrations, especially where T-SQL procedures, CLR assemblies, SQL Agent jobs, and multi-schema complexity slow down modernization.</p>
+          <div class="pill-row">
+            <span class="pill">Reduce effort from months to weeks</span>
+            <span class="pill">Qualify early with readiness scoring</span>
+            <span class="pill">Prove automation coverage fast</span>
+          </div>
+        </div>
+
+        <aside class="hero-panel">
+          <h2>Seller Narrative</h2>
+          <ul>
+            <li>Lead with license takeout and scale ceiling.</li>
+            <li>Use scan output to qualify feasibility early.</li>
+            <li>Position AI Skills on procedural rewrite risk.</li>
+            <li>Land on a controlled path to cutover.</li>
+          </ul>
+        </aside>
+      </div>
+
+      <div class="row-proof avoid">
+        <article>
+          <div class="terminal">
+            <div class="terminal-head">
+              <div class="dots"><span></span><span></span><span></span></div>
+              <div>scan scoring summary</div>
+            </div>
+            <pre>Category               Score   Max
+Schema Compatibility   24      25
+Data Complexity        20      20
+Query Compatibility    18      20
+Procedural Code        17      25
+Operational            10      10
+
+Overall Score          89/100
+Rating                 Good
+Automation %           95.0%
+
+Findings
+- Blockers: 0
+- Warnings: 3
+  - stored_procedure
+  - trigger
+  - unsupported_collation
+
+Scanned Objects
+Tables  3  Columns 9  Indexes 4
+Routines 1 Triggers 1 Views 0</pre>
+          </div>
+          <div class="proof-note">Example TiShift scan output: readiness score, automation estimate, findings summary, and scanned object inventory in one pass.</div>
+        </article>
+
+        <article class="card tint-blue">
+          <h2>Why This Matters</h2>
+          <ul class="tight">
+            <li><strong>Qualify early:</strong> score fit before committing delivery resources.</li>
+            <li><strong>De-risk fast:</strong> surface blockers and manual work upfront.</li>
+            <li><strong>Prove acceleration:</strong> show automated versus AI-assisted scope.</li>
+            <li><strong>Guide next step:</strong> move directly from scan to conversion plan.</li>
+          </ul>
+          <div class="coverage">
+            <h3>Automation Coverage</h3>
+            <div class="bar"><div class="auto"></div><div class="ai"></div><div class="manual"></div></div>
+            <div class="legend">
+              <div><strong>Automated:</strong> schema conversion, load, sync scaffolding, validation.</div>
+              <div><strong>AI-assisted:</strong> procedures, triggers, and CLR-to-app code stubs.</div>
+              <div><strong>Manual:</strong> linked servers or deep non-portable logic.</div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="row-2 avoid">
+        <article class="score-card">
+          <h2>Readiness Scoring Model</h2>
+          <p>Use the first scan to separate fast wins from bad-fit opportunities before investing SA time.</p>
+          <div class="score-mini">
+            <div class="score-box"><strong>Schema</strong><span>Types, collations, layout.</span></div>
+            <div class="score-box"><strong>Code</strong><span>Procedures, triggers, CLR, jobs.</span></div>
+            <div class="score-box"><strong>Query</strong><span>Dialect and pattern gaps.</span></div>
+            <div class="score-box"><strong>Data</strong><span>Temporal, FILESTREAM, edge types.</span></div>
+            <div class="score-box"><strong>Ops</strong><span>CDC and cutover readiness.</span></div>
+          </div>
+        </article>
+
+        <article class="card tint-orange">
+          <h2>Good Candidate Signals</h2>
+          <ul>
+            <li>Mostly standard schema with limited procedural logic.</li>
+            <li>Few or no CLR dependencies.</li>
+            <li>High automated plus AI-assisted conversion share.</li>
+            <li>Clear replication and cutover path.</li>
+          </ul>
+        </article>
+      </div>
+
+      <article class="card avoid" style="margin-top:10px;">
+        <h2>Five Integrated Capabilities, One CLI</h2>
+        <div class="cap-grid">
+          <div class="cap"><div class="num">1</div><h3>Scan</h3><p>Read-only inventory and scored readiness report.</p></div>
+          <div class="cap"><div class="num">2</div><h3>Convert</h3><p>DDL, types, collations, and T-SQL to app code.</p></div>
+          <div class="cap"><div class="num">3</div><h3>Load</h3><p>Bulk import with resumable, optimized transfer.</p></div>
+          <div class="cap"><div class="num">4</div><h3>Sync</h3><p>CDC for cutover window with lag monitoring.</p></div>
+          <div class="cap"><div class="num">5</div><h3>Check</h3><p>Counts, checksums, diffs, and verification.</p></div>
+        </div>
+      </article>
+
+      <div class="footer">
+        <span>TiShift for SQL Server</span>
+        <span>Page 1 of 2</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="content">
+      <div class="topbar">
+        <div class="eyebrow">Tool Experience</div>
+        <div class="topnote">From Assessment to Cutover</div>
+      </div>
+
+      <div class="workflow avoid">
+        <article class="terminal">
+          <div class="terminal-head"><div class="dots"><span></span><span></span><span></span></div><div>tishift-mssql scan</div></div>
+          <pre>$ tishift-mssql scan --config tishift-mssql.yaml
+
+Source: sqlserver-prod
+Schemas scanned: 14
+Stored procedures: 187
+CLR assemblies: 6
+SQL Agent jobs: 23
+
+Readiness score: 72/100
+Automation coverage:
+  automated   54%
+  ai-assisted 31%
+  manual      15%</pre>
+        </article>
+
+        <article class="terminal">
+          <div class="terminal-head"><div class="dots"><span></span><span></span><span></span></div><div>tishift-mssql convert</div></div>
+          <pre>$ tishift-mssql convert --language python --dry-run
+
+Generated:
+  schema/tidb_schema.sql
+  app/stored_procedures/
+  app/triggers/
+  app/sql_agent_jobs/
+  review/conversion_diff.md
+
+AI Skills applied:
+  - procedure decomposition
+  - CLR to service stub</pre>
+        </article>
+
+        <article class="terminal">
+          <div class="terminal-head"><div class="dots"><span></span><span></span><span></span></div><div>load / sync / check</div></div>
+          <pre>$ tishift-mssql load --strategy lightning --resume
+Throughput gain: 3.8x
+
+$ tishift-mssql sync --status
+CDC status: running
+Lag: 11s
+
+$ tishift-mssql check
+Row counts: PASS
+Checksums: PASS</pre>
+        </article>
+      </div>
+
+      <div class="row-2 avoid">
+        <article class="card tint-green">
+          <h2>What Partners Can Show</h2>
+          <ul>
+            <li>Feasibility in days, not months.</li>
+            <li>Blockers and warnings before services effort starts.</li>
+            <li>Automation estimate for delivery planning.</li>
+            <li>Diff-driven review before applying changes.</li>
+          </ul>
+        </article>
+
+        <article class="card tint-orange">
+          <h2>Talk Track</h2>
+          <ul>
+            <li>Lead with cost takeout and modernization.</li>
+            <li>Use scan results to qualify where to invest.</li>
+            <li>Frame AI Skills as rewrite acceleration.</li>
+            <li>Emphasize controlled migration: assess, convert, load, sync, validate.</li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="row-3 avoid">
+        <article class="card">
+          <h2>Rules Engine</h2>
+          <p>`NVARCHAR`, `DATETIME2`, `MONEY`, `HIERARCHYID`, collations, and T-SQL pattern detection.</p>
+        </article>
+        <article class="card">
+          <h2>Conversion Modules</h2>
+          <p>Procedures, triggers, CLR assemblies, SQL Agent jobs, and `sqlglot`-backed rewrites.</p>
+        </article>
+        <article class="card">
+          <h2>Inventory Model</h2>
+          <p>Memory-optimized tables, temporal tables, FILESTREAM, linked servers, and schema mapping options.</p>
+        </article>
+      </div>
+
+      <article class="card avoid" style="margin-top:10px;">
+        <h2>Best Partner Message</h2>
+        <p>“We can tell you quickly whether this SQL Server estate is a strong TiDB migration candidate, what is automated, and what will still need human attention.”</p>
+        <p style="margin-top:8px;"><strong>Contact:</strong> PingCAP Partner Solutions Architect</p>
+      </article>
+
+      <div class="footer">
+        <span>TiShift for SQL Server</span>
+        <span>Page 2 of 2</span>
+      </div>
+    </div>
+  </section>
+</body>
+</html>

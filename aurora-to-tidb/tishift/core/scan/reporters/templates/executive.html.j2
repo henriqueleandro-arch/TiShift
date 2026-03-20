@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TiShift Executive Summary</title>
+  <style>
+  body { font-family: "Helvetica Neue", Arial, sans-serif; color: #0f172a; margin: 2rem; }
+  h1 { font-size: 24px; margin-bottom: 0.25rem; }
+  h2 { font-size: 18px; margin-top: 1.5rem; }
+  .muted { color: #64748b; }
+  .score { font-size: 32px; font-weight: bold; }
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+  table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+  th, td { border: 1px solid #e2e8f0; padding: 6px 8px; font-size: 12px; }
+  th { background: #f1f5f9; text-align: left; }
+  .card { border: 1px solid #e2e8f0; padding: 12px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h1>TiShift Executive Summary</h1>
+  <div class="muted">Generated at {{ generated_at }}</div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="muted">Overall Score</div>
+      <div class="score">{{ summary.overall_score }}/100</div>
+      <div class="muted">Rating: {{ summary.rating }}</div>
+    </div>
+    <div class="card">
+      <div class="muted">Source</div>
+      <div>{{ source.host }}</div>
+      <div class="muted">Aurora: {{ source.aurora_version }} (MySQL {{ source.mysql_version }})</div>
+    </div>
+  </div>
+
+  <h2>Key Metrics</h2>
+  <table>
+    <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Databases</td><td>{{ summary.database_count }}</td></tr>
+      <tr><td>Tables</td><td>{{ summary.table_count }}</td></tr>
+      <tr><td>Total Data (GB)</td><td>{{ summary.total_data_size_gb }}</td></tr>
+      <tr><td>Automation Coverage</td><td>{{ summary.automation_coverage_pct }}%</td></tr>
+      <tr><td>AI Assisted</td><td>{{ summary.ai_assisted_pct }}%</td></tr>
+      <tr><td>Manual Required</td><td>{{ summary.manual_required_pct }}%</td></tr>
+    </tbody>
+  </table>
+
+  {% if cost_analysis %}
+  <h2>Cost Comparison</h2>
+  <table>
+    <thead><tr><th>Category</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Aurora Monthly Estimate</td><td>${{ '%.2f' | format(cost_analysis.aurora_monthly_estimate) }}</td></tr>
+      <tr><td>TiDB Monthly Estimate</td><td>${{ '%.2f' | format(cost_analysis.tidb_monthly_estimate) }}</td></tr>
+      <tr><td>Projected Savings</td><td>{{ cost_analysis.savings_pct }}%</td></tr>
+      <tr><td>TiDB Recommendation</td><td>{{ cost_analysis.tidb_recommendation.tier }} — {{ cost_analysis.tidb_recommendation.nodes }} nodes</td></tr>
+    </tbody>
+  </table>
+  {% endif %}
+
+  {% if sp_analysis %}
+  <h2>Stored Procedure Summary</h2>
+  <table>
+    <thead><tr><th>Schema</th><th>Name</th><th>Difficulty</th><th>Automation %</th></tr></thead>
+    <tbody>
+      {% for sp in sp_analysis %}
+      <tr><td>{{ sp.schema }}</td><td>{{ sp.name }}</td><td>{{ sp.difficulty }}</td><td>{{ sp.automation_pct or '' }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</body>
+</html>

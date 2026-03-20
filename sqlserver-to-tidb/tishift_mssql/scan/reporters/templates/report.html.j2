@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TiShift SQL Server Scan Report</title>
+  <style>
+    :root {
+      --bg: #f3f5ef; --ink: #112; --panel: #fff;
+      --accent: #1a7f5a; --warn: #ba7c00; --block: #b42318;
+      --green: #22c55e; --yellow: #eab308; --orange: #f97316; --red: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; color: var(--ink); background: linear-gradient(160deg, #f3f5ef, #eef7f4); }
+    .wrap { max-width: 1020px; margin: 24px auto; padding: 0 16px; }
+    .panel { background: var(--panel); border-radius: 14px; padding: 20px 24px; box-shadow: 0 8px 24px rgba(0,0,0,.06); margin-bottom: 16px; }
+    h1 { margin: 0 0 6px; font-size: 22px; }
+    h2 { margin: 0 0 12px; font-size: 17px; border-bottom: 2px solid #e8e8e8; padding-bottom: 6px; }
+    .meta { color: #556; font-size: 14px; line-height: 1.6; }
+    .score-hero { font-size: 48px; font-weight: 800; color: var(--accent); margin: 8px 0; }
+    .rating { font-size: 16px; font-weight: 600; }
+    .rating-excellent { color: var(--green); }
+    .rating-good { color: var(--yellow); }
+    .rating-moderate { color: var(--orange); }
+    .rating-challenging { color: var(--red); }
+    .rating-difficult { color: var(--block); }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #ececec; }
+    th { background: #f8f8f6; font-weight: 600; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .tag { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .tag-block { background: #fee4e2; color: var(--block); }
+    .tag-warn { background: #fff2cc; color: var(--warn); }
+    .tag-info { background: #e8f4ec; color: var(--accent); }
+    details { margin: 4px 0; }
+    details summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
+    .bar { height: 8px; border-radius: 4px; background: #e4e4e4; overflow: hidden; margin-top: 4px; }
+    .bar-fill { height: 100%; border-radius: 4px; }
+    .bar-green { background: var(--green); }
+    .bar-yellow { background: var(--yellow); }
+    .bar-orange { background: var(--orange); }
+    .bar-red { background: var(--red); }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+    .footer { text-align: center; font-size: 12px; color: #889; padding: 16px 0; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="panel">
+    <h1>TiShift-SQLServer &mdash; Migration Readiness Report</h1>
+    <div class="meta">
+      Source: <strong>{{ report.source_host }}</strong><br>
+      Database: <strong>{{ report.database }}</strong><br>
+      {% if report.sqlserver_metadata.edition %}
+        Edition: {{ report.sqlserver_metadata.edition }} ({{ report.sqlserver_metadata.product_version or 'n/a' }})<br>
+      {% endif %}
+      Tables: {{ report.schema_inventory.tables|length }} &nbsp;|&nbsp;
+      Data: {{ "%.1f"|format(report.data_profile.total_data_mb / 1024) }} GB &nbsp;|&nbsp;
+      Total Rows: {{ "{:,}".format(report.data_profile.total_rows) }}
+    </div>
+    <div class="score-hero">{{ report.scoring.overall_score }}/100</div>
+    <div class="rating rating-{{ report.scoring.rating }}">{{ report.scoring.rating|upper }}</div>
+  </div>
+
+  <!-- Score Breakdown -->
+  <div class="panel">
+    <h2>Score Breakdown</h2>
+    <table>
+      <tr><th>Category</th><th class="num">Score</th><th class="num">Max</th><th>Deductions</th></tr>
+      {% for cat_key in ['schema_compatibility', 'code_portability', 'query_compatibility', 'data_complexity', 'operational_readiness'] %}
+        {% set cat = report.scoring[cat_key] %}
+        {% if cat %}
+        <tr>
+          <td>{{ cat.name }}</td>
+          <td class="num">{{ cat.score }}</td>
+          <td class="num">{{ cat.max_score }}</td>
+          <td>
+            {% if cat.deductions %}
+              <details>
+                <summary>{{ cat.deductions|length }} deduction(s)</summary>
+                <ul>{% for d in cat.deductions %}<li>{{ d }}</li>{% endfor %}</ul>
+              </details>
+            {% else %}&mdash;{% endif %}
+          </td>
+        </tr>
+        {% endif %}
+      {% endfor %}
+    </table>
+  </div>
+
+  <div class="two-col">
+
+    <!-- Issues -->
+    <div class="panel">
+      <h2>Issues</h2>
+      <p>
+        <span class="tag tag-block">Blockers {{ report.assessment.blockers|length }}</span>
+        <span class="tag tag-warn">Warnings {{ report.assessment.warnings|length }}</span>
+        <span class="tag tag-info">Info {{ report.assessment.info|length }}</span>
+      </p>
+      {% if report.assessment.blockers %}
+      <details open>
+        <summary>Blockers</summary>
+        <ul>
+          {% for issue in report.assessment.blockers[:15] %}
+            <li><strong>{{ issue.type }}</strong> &mdash; {{ issue.object_name }}: {{ issue.message }}</li>
+          {% endfor %}
+          {% if report.assessment.blockers|length > 15 %}<li>&hellip; and {{ report.assessment.blockers|length - 15 }} more</li>{% endif %}
+        </ul>
+      </details>
+      {% endif %}
+      {% if report.assessment.warnings %}
+      <details>
+        <summary>Warnings</summary>
+        <ul>
+          {% for issue in report.assessment.warnings[:15] %}
+            <li><strong>{{ issue.type }}</strong> &mdash; {{ issue.object_name }}: {{ issue.message }}</li>
+          {% endfor %}
+          {% if report.assessment.warnings|length > 15 %}<li>&hellip; and {{ report.assessment.warnings|length - 15 }} more</li>{% endif %}
+        </ul>
+      </details>
+      {% endif %}
+    </div>
+
+    <!-- Inventory -->
+    <div class="panel">
+      <h2>Inventory</h2>
+      <table>
+        <tr><th>Object</th><th class="num">Count</th></tr>
+        <tr><td>Tables</td><td class="num">{{ report.schema_inventory.tables|length }}</td></tr>
+        <tr><td>Columns</td><td class="num">{{ report.schema_inventory.columns|length }}</td></tr>
+        <tr><td>Indexes</td><td class="num">{{ report.schema_inventory.indexes|length }}</td></tr>
+        <tr><td>Foreign Keys</td><td class="num">{{ report.schema_inventory.foreign_keys|length }}</td></tr>
+        <tr><td>Routines</td><td class="num">{{ report.schema_inventory.routines|length }}</td></tr>
+        <tr><td>Triggers</td><td class="num">{{ report.schema_inventory.triggers|length }}</td></tr>
+        <tr><td>Views</td><td class="num">{{ report.schema_inventory.views|length }}</td></tr>
+        <tr><td>CLR Assemblies</td><td class="num">{{ report.schema_inventory.assemblies|length }}</td></tr>
+        <tr><td>Linked Servers</td><td class="num">{{ report.schema_inventory.linked_servers|length }}</td></tr>
+        <tr><td>Agent Jobs</td><td class="num">{{ report.schema_inventory.agent_jobs|length }}</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Feature Usage -->
+  {% set usages = report.feature_scan.usages %}
+  {% if usages %}
+  <div class="panel">
+    <h2>T-SQL Feature Usage</h2>
+    <table>
+      <tr><th>Pattern</th><th class="num">Occurrences</th><th>Example Object</th></tr>
+      {% set ns = namespace(seen={}) %}
+      {% for u in usages %}
+        {% if u.pattern_name not in ns.seen %}
+          {% set _ = ns.seen.update({u.pattern_name: 0}) %}
+        {% endif %}
+      {% endfor %}
+      {# Jinja2 doesn't support Counter easily, so we list distinct patterns #}
+      {% set patterns_seen = [] %}
+      {% for u in usages %}
+        {% if u.pattern_name not in patterns_seen %}
+          {% if patterns_seen.append(u.pattern_name) %}{% endif %}
+          <tr>
+            <td>{{ u.pattern_name|replace("_", " ")|title }}</td>
+            <td class="num">{{ usages|selectattr("pattern_name", "equalto", u.pattern_name)|list|length }}</td>
+            <td>{{ u.object_name }}</td>
+          </tr>
+        {% endif %}
+      {% endfor %}
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- Automation Estimates -->
+  <div class="panel">
+    <h2>Automation Estimates</h2>
+    <table>
+      <tr><th>Level</th><th class="num">%</th><th>Includes</th></tr>
+      <tr>
+        <td>Fully Automated</td>
+        <td class="num">{{ "%.0f"|format(report.automation.fully_automated_pct) }}%</td>
+        <td>{{ report.automation.fully_automated_includes|join("; ") or "&mdash;" }}</td>
+      </tr>
+      <tr>
+        <td>AI-Assisted</td>
+        <td class="num">{{ "%.0f"|format(report.automation.ai_assisted_pct) }}%</td>
+        <td>{{ report.automation.ai_assisted_includes|join("; ") or "&mdash;" }}</td>
+      </tr>
+      <tr>
+        <td>Manual Required</td>
+        <td class="num">{{ "%.0f"|format(report.automation.manual_required_pct) }}%</td>
+        <td>{{ report.automation.manual_required_includes|join("; ") or "&mdash;" }}</td>
+      </tr>
+    </table>
+    <div class="bar" style="margin-top:12px;">
+      <div class="bar-fill bar-green" style="width:{{ report.automation.fully_automated_pct }}%; display:inline-block;"></div><!--
+      --><div class="bar-fill bar-yellow" style="width:{{ report.automation.ai_assisted_pct }}%; display:inline-block;"></div><!--
+      --><div class="bar-fill bar-orange" style="width:{{ report.automation.manual_required_pct }}%; display:inline-block;"></div>
+    </div>
+  </div>
+
+  <!-- Cost Estimate -->
+  {% if report.cost_estimate %}
+  <div class="panel">
+    <h2>Cost Estimate</h2>
+    <p>SQL Server estimated monthly: <strong>${{ "%.0f"|format(report.cost_estimate.estimated_monthly_sqlserver_license_usd) }}</strong></p>
+    <ul>{% for a in report.cost_estimate.assumptions %}<li>{{ a }}</li>{% endfor %}</ul>
+  </div>
+  {% endif %}
+
+  <div class="footer">
+    Generated by TiShift-SQLServer v{{ report.version }} &mdash; {{ report.generated_at }}
+  </div>
+
+</div>
+</body>
+</html>
