@@ -32,4 +32,4 @@ python -m tishift.cli check --config tishift.yaml --schema mydb
 
 ## Config
 
-See `aurora-to-tidb-migration-plan.md` for full specification and `tishift.yaml` schema.
+See `tishift.example.yaml` for the configuration schema.
